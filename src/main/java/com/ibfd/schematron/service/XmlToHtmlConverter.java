@@ -1,6 +1,7 @@
 package com.ibfd.schematron.service;
 
 import net.sf.saxon.s9api.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.xml.transform.stream.StreamSource;
@@ -13,16 +14,20 @@ import java.util.Map;
  * Converts an IBFD journal XML article to an HTML document outline using
  * Saxon XSLT 2.0 and the bundled article-to-html.xsl stylesheet.
  *
- * The stylesheet receives the path to the local collections.xml so it can
- * look up the collection name without a live HTTP fetch.
+ * The collections lookup URL is configurable via application.properties
+ * (collections.url). By default it points to the live IBFD URL; set it to
+ * "classpath:config/collections.xml" to use the bundled local copy instead.
  */
 @Service
 public class XmlToHtmlConverter {
 
     private final Processor processor;
+    private final String collectionsUrl;
 
-    public XmlToHtmlConverter(Processor processor) {
-        this.processor = processor;
+    public XmlToHtmlConverter(Processor processor,
+                               @Value("${collections.url}") String collectionsUrl) {
+        this.processor      = processor;
+        this.collectionsUrl = collectionsUrl;
     }
 
     public void convert(InputStream xmlStream, OutputStream htmlStream) throws SaxonApiException {
@@ -33,11 +38,10 @@ public class XmlToHtmlConverter {
 
         Xslt30Transformer transformer = executable.load30();
 
-        // Pass collections.xml location as a stylesheet parameter so that
-        // the XSLT doc() call resolves to a local file (no live HTTP needed)
-        URL collectionsUrl = resolveClasspathResource("config/collections.xml");
+        // Pass the collections URL as an XSLT parameter.
+        // Saxon's doc() can resolve both file:// (local) and https:// (live) URIs.
         transformer.setStylesheetParameters(Map.of(
-            new QName("collectionsUrl"), new XdmAtomicValue(collectionsUrl.toString())
+            new QName("collectionsUrl"), new XdmAtomicValue(collectionsUrl)
         ));
 
         Serializer serializer = processor.newSerializer(htmlStream);

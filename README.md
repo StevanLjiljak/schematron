@@ -103,9 +103,9 @@ Rules applied by the stylesheet:
 | `<footnote>` inside `<title>` | suppressed entirely |
 | All body text, paragraphs, tables, etc. | not included |
 
-The collection name (`World Tax Journal`) is looked up from the local
-`config/collections.xml` using the `collection="wtj"` attribute on the root element —
-no live HTTP request is made at runtime.
+The collection name (`World Tax Journal`) is looked up by reading the
+`collection="wtj"` attribute from the root element and calling Saxon's `doc()`
+function against the configured collections URL (see [Configuration](#configuration) below).
 
 ### Step 3 – Schematron Validation (Schematron Part 2)
 
@@ -144,6 +144,34 @@ The source XML contains **two intentional errors**; both Schematron rules should
 
 The SVRL report (`report.xml`) will contain two `<svrl:failed-assert>` elements
 with descriptive messages identifying each discrepancy.
+
+---
+
+## Configuration
+
+All settings live in `src/main/resources/application.properties`.
+
+### collections.url
+
+Controls where the XSLT looks up the journal collection name.
+
+| Value | When to use |
+|-------|-------------|
+| `https://dtd.ibfd.org/dtd/config/collections.xml` | **Default** — fetches the live IBFD file at transform time |
+| `classpath:config/collections.xml` | Offline / no internet — uses the bundled local copy |
+
+```properties
+# application.properties
+
+# Live URL (default):
+collections.url=https://dtd.ibfd.org/dtd/config/collections.xml
+
+# Local fallback (uncomment to use):
+# collections.url=classpath:config/collections.xml
+```
+
+Saxon's `doc()` function resolves both `https://` and `classpath:` URIs transparently —
+no changes to the XSLT are needed when switching between the two options.
 
 ---
 

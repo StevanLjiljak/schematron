@@ -20,6 +20,7 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	// Saxon HE – XSLT 2.0/3.0 processor used for both the XML→HTML transform
 	// and the two-step Schematron pipeline (transpile .sch → check.xsl, then validate)
 	implementation 'net.sf.saxon:Saxon-HE:12.5'

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collections>
+  <collection>
+    <portal_section>publication</portal_section>
+    <domain>PUBLICATIONS</domain>
+    <docroot>PUBLICATIONS</docroot>
+    <collection_code>wtj</collection_code>
+    <collection_name>World Tax Journal</collection_name>
+    <collection_citation subcollection="World Tax J.">Journal Articles &amp; Opinion Pieces IBFD</collection_citation>
+    <category>Journal Articles &amp; Opinion Pieces</category>
+    <subcategory>World Tax Journal</subcategory>
+    <information_type>info_journal</information_type>
+    <collection_root spider="yes" file_pattern=".*.[hp][td][mf]l?" path="/collections/wtj/" recurse="yes" show_in_search_results="yes">
+      <exclude_pattern>/printversion/</exclude_pattern>
+      <exclude_pattern>/pdf_resource/</exclude_pattern>
+    </collection_root>
+    <driver>regional-xml-jats-no-printversion</driver>
+    <data_deliveries_preprocess>regional-preprocess.xsl</data_deliveries_preprocess>
+    <source_data_path>t:\bronbestanden_xml\wtj\xml</source_data_path>
+    <cms_collection_name>World Tax Journal</cms_collection_name>
+    <issn media="online">2352-9237</issn>
+    <issn media="print">1878-4917</issn>
+  </collection>
+</collections>

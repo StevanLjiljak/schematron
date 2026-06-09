@@ -27,12 +27,19 @@ src/main/
 │   ├── SchematronApplication.java      # Spring Boot entry point
 │   ├── config/
 │   │   └── SaxonConfig.java            # Saxon HE Processor Spring bean
+│   ├── model/
+│   │   ├── FailedAssertion.java        # Record: one SVRL failed-assert
+│   │   └── PipelineResult.java         # Record: full pipeline output (HTML + SVRL + assertions)
 │   ├── service/
 │   │   ├── XmlValidator.java           # XML well-formedness check (Saxon)
 │   │   ├── XmlToHtmlConverter.java     # XSLT transformation service
-│   │   └── SchematronRunner.java       # Two-step Schematron pipeline
+│   │   ├── SchematronRunner.java       # Two-step Schematron pipeline
+│   │   ├── SvrlParser.java             # Parses SVRL XML → List<FailedAssertion>
+│   │   └── PipelineService.java        # Orchestrates all steps, caches result
+│   ├── web/
+│   │   └── DashboardController.java    # GET / → HTML dashboard
 │   └── runner/
-│       └── AppRunner.java              # Orchestrates all steps on startup
+│       └── AppRunner.java              # Runs pipeline on startup, writes output files
 └── resources/
     ├── xml/
     │   └── wtj_2018_04_int_1.xml       # Source journal article (input)
@@ -44,6 +51,13 @@ src/main/
     │   └── pubdate-check.sch           # ISO Schematron rules
     └── schxslt2/
         └── transpile.xsl               # SchXslt2 v1.10.3 transpiler
+
+src/test/java/com/ibfd/schematron/
+├── SchematronApplicationTests.java     # Spring context load test
+└── service/
+    ├── XmlValidatorTest.java           # 4 tests – well-formed / malformed XML
+    ├── XmlToHtmlConverterTest.java     # 14 tests – headings, inline markup, body exclusion
+    └── SchematronRunnerTest.java       # 6 tests – assertion count, rule IDs, SVRL structure
 ```
 
 ---
@@ -60,7 +74,7 @@ gradlew.bat bootRun
 ./gradlew bootRun
 ```
 
-The application runs all three steps on startup and exits. Output files are written to the `output/` directory in the project root.
+The application runs all three steps on startup, writes the output files, then keeps the embedded Tomcat server running. Open **http://localhost:8080** in a browser to see the interactive dashboard.
 
 ### Build a runnable JAR
 
@@ -175,6 +189,33 @@ no changes to the XSLT are needed when switching between the two options.
 
 ---
 
+## Web Dashboard
+
+After startup, navigate to **http://localhost:8080** to see:
+
+- **Pipeline bar** – three step indicators (✅ XML Valid → ✅ HTML Generated → ⚠️/✅ Schematron)
+- **Document Outline panel** – the full article heading hierarchy rendered from the XSLT output
+- **Schematron Report panel** – each failed assertion displayed as a card with rule name, XPath location, failing test expression, and the descriptive message
+
+---
+
+## Running the Tests
+
+```bash
+./gradlew test
+```
+
+25 unit tests across three test classes — no Spring context or network connection required:
+
+| Test class | Tests | What is verified |
+|------------|------:|-----------------|
+| `XmlValidatorTest` | 4 | Well-formed XML passes; malformed / empty XML throws `IllegalArgumentException` |
+| `XmlToHtmlConverterTest` | 14 | `<title>` content, `h1`/`h2`/`h3` depth, `<sub>`/`<i>` inline markup, footnote suppression, body text exclusion |
+| `SchematronRunnerTest` | 6 | Exactly 2 `failed-assert` elements; correct `patternId` for each rule; valid SVRL namespace |
+| `SchematronApplicationTests` | 1 | Spring context wires correctly (Saxon bean, all services) |
+
+---
+
 ## Output Files
 
 | File | Description |
@@ -189,6 +230,7 @@ no changes to the XSLT are needed when switching between the two options.
 | Dependency | Purpose |
 |------------|---------|
 | `org.springframework.boot:spring-boot-starter` | Application container / DI |
+| `org.springframework.boot:spring-boot-starter-web` | Embedded Tomcat + Spring MVC (dashboard) |
 | `net.sf.saxon:Saxon-HE:12.5` | XSLT 2.0 processor (also used for Schematron) |
 | `schxslt2/transpile.xsl` (bundled) | SchXslt2 v1.10.3 — ISO Schematron transpiler |
 

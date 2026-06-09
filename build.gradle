@@ -19,9 +19,9 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
 	// Saxon HE – XSLT 2.0/3.0 processor used for both the XML→HTML transform
 	// and the two-step Schematron pipeline (transpile .sch → check.xsl, then validate)
-	// Update the version to match the saxon-he jar you downloaded from saxonica.com
 	implementation 'net.sf.saxon:Saxon-HE:12.5'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
